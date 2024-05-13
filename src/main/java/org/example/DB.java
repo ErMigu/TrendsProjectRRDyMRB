@@ -13,7 +13,8 @@ public class DB {
     private String password;
     public DB() {
         Properties props = new Properties();
-        try (FileInputStream fis = new FileInputStream("db.properties")) {
+        String directorioTrabajo = System.getProperty("user.dir");
+        try (FileInputStream fis = new FileInputStream(directorioTrabajo + "/db.properties")) {
             props.load(fis);
              url = props.getProperty("db.url");
              user = props.getProperty("db.user");

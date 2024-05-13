@@ -10,7 +10,7 @@ CREATE TABLE CompanyDomains(
     company TEXT
 );
 
-INSERT INTO CompanyDomains (domain, company) VALUES
+INSERT INTO CompanyDomains (company, domain) VALUES
                                                  ('Apple', '@apple.com'),
                                                  ('Microsoft', '@microsoft.com'),
                                                  ('Aramco', '@aramco.com'),

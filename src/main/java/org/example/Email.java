@@ -104,7 +104,7 @@ public class Email {
             for (String word : words) {
                 System.out.println(word);
                 if (subjectTopics.containsKey(word)) {
-                    if(subjectTopics.get(word) == "company"){
+                    if(subjectTopics.get(word).equals("company")){
                         int domainStart = sender.indexOf("@");
                         String domain = sender.substring(domainStart);
                         String domainQuery = "SELECT * FROM companyDomains WHERE domain = ?";
@@ -113,11 +113,20 @@ public class Email {
                             searchDomain.setString(1,domain);
                             ResultSet resultSearchDomain = searchDomain.executeQuery();
                             if(resultSearchDomain.next()){
-                                System.out.println(resultSearchDomain.getString("domain"));
+                                String name = resultSearchDomain.getString("domain");
+                                int dotPosition = name.lastIndexOf(".");
+                                String cleanName = name.substring(1,dotPosition);
                                 //If the subject contains amazon and comes from @amazon.com -> trust
-                                score = 1;
-                                System.out.println("Contains company and comes from official mail");
-                                break;
+                                if(word.equalsIgnoreCase(cleanName)){
+                                    score = 1;
+                                    System.out.println("Contains company and comes from official mail");
+                                    break;
+                                }else{
+                                    //If the subject contains amazon but comes from nvidia -> no trustç
+                                    System.out.println("Contains company but comes from other official mail");
+                                    score--;
+                                }
+
                             }else{
                                 System.out.println("Contains company but doesn't come from official mail");
                                 score--;

@@ -37,16 +37,6 @@ public class DB {
         }
     }
 
-    public ResultSet executeQuery(String sql) throws SQLException {
-        Statement statement = connection.createStatement();
-        return statement.executeQuery(sql);
-    }
-
-    public int executeUpdate(String sql) throws SQLException {
-        Statement statement = connection.createStatement();
-        return statement.executeUpdate(sql);
-    }
-
     public PreparedStatement prepareStatement(String sql) throws SQLException {
         return connection.prepareStatement(sql);
     }

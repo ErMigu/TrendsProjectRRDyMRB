@@ -17,6 +17,7 @@ public class GUI {
 
         // Crear botón
         JButton enviarButton = new JButton("Enviar");
+        Auxiliar aux = new Auxiliar();
 
         // Acción del botón
         enviarButton.addActionListener(new ActionListener() {
@@ -27,9 +28,10 @@ public class GUI {
                 String text = textField.getText();
 
                 // Crear y enviar el email
-                Email emailObj = new Email(email, subject, text);
+                Email emailObj = new Email(email, subject, text,aux);
                 try {
                     emailObj.checkSender();
+                    emailObj.checkSubject();
                 }catch (SQLException exception){
                     exception.printStackTrace();
                 }
@@ -55,5 +57,6 @@ public class GUI {
 
         // Mostrar la ventana
         frame.setVisible(true);
+
     }
 }

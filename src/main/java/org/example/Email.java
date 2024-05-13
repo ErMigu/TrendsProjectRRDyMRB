@@ -4,20 +4,28 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 
 public class Email {
     public Integer score = 0;
-    public String sender = "";
+    public String sender;
     public String subject;
     public String text;
 
-    private DB dataBase;
-    private Integer scoreUser = 0;
+    private final Auxiliar auxClass;
 
-    public Email(String sender, String subject, String text) {
+    private final DB dataBase;
+    private Integer scoreUser = 0;
+    private Integer scoreSubject = 0;
+    private boolean suspiciousSender = false;
+    private boolean suspiciousSubject = false;
+    private boolean suspiciousContent = false;
+
+    public Email(String sender, String subject, String text, Auxiliar aux) {
         this.sender = sender;
         this.subject = subject;
         this.text = text;
+        this.auxClass = aux;
         dataBase = new DB();
     }
 
@@ -35,8 +43,8 @@ public class Email {
                 System.out.println("User not in database");
                 //Creates values for the user
                 String email = sender;
-                Integer emailsSent = 1;
-                Integer phishingEmails = 0;
+                int emailsSent = 1;
+                int phishingEmails = 0;
 
                 int domainStart = email.indexOf("@");
                 String domain = email.substring(domainStart);
@@ -83,5 +91,53 @@ public class Email {
             e.printStackTrace();
         }
 
+    }
+
+    public void checkSubject(){
+        int score = 0;
+        String[] words = subject.split(" ");
+        HashMap<String,String> subjectTopics = auxClass.getSubjectTopics();
+
+        try{
+            dataBase.connect();
+
+            for (String word : words) {
+                System.out.println(word);
+                if (subjectTopics.containsKey(word)) {
+                    if(subjectTopics.get(word) == "company"){
+                        int domainStart = sender.indexOf("@");
+                        String domain = sender.substring(domainStart);
+                        String domainQuery = "SELECT * FROM companyDomains WHERE domain = ?";
+                        try {
+                            PreparedStatement searchDomain = dataBase.prepareStatement(domainQuery);
+                            searchDomain.setString(1,domain);
+                            ResultSet resultSearchDomain = searchDomain.executeQuery();
+                            if(resultSearchDomain.next()){
+                                System.out.println(resultSearchDomain.getString("domain"));
+                                //If the subject contains amazon and comes from @amazon.com -> trust
+                                score = 1;
+                                System.out.println("Contains company and comes from official mail");
+                                break;
+                            }else{
+                                System.out.println("Contains company but doesn't come from official mail");
+                                score--;
+                            }
+                        }catch(SQLException e){
+                            e.printStackTrace();
+                        }
+                    }else{
+                        System.out.println("Contains keyword");
+                        score--;
+                    }
+
+                }
+            }
+            if(score < 0){
+                scoreSubject = -1;
+            }else scoreSubject = score;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

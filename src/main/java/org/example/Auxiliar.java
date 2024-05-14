@@ -1,4 +1,7 @@
 package org.example;
+import com.swabunga.spell.engine.SpellDictionaryHashMap;
+import com.swabunga.spell.event.SpellChecker;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -9,6 +12,7 @@ import java.util.HashMap;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.io.File;
 
 public class Auxiliar {
     public HashMap<String,String> subjectTopics;
@@ -20,6 +24,8 @@ public class Auxiliar {
     public HashMap<String,String> bankingPhrases;
     public HashMap<String,String> accountsPhrases;
     public HashMap<String,String> workPhrases;
+    SpellDictionaryHashMap dictionary;
+    SpellChecker spellChecker;
 
     DB dataBase;
 
@@ -33,6 +39,15 @@ public class Auxiliar {
         bankingPhrases = new HashMap<>();
         accountsPhrases = new HashMap<>();
         workPhrases = new HashMap<>();
+
+        dictionary = null;
+        try {
+            dictionary = new SpellDictionaryHashMap(new File("Dictionaries/enWords.txt"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        spellChecker = new SpellChecker(dictionary);
+
         try (BufferedReader br = new BufferedReader(new FileReader("Dictionaries/subjectTopics.txt"))) {
             String line;
             while ((line = br.readLine()) != null) {

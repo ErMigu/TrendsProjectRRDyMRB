@@ -31,9 +31,12 @@ public class Email {
     private double cautionWordDetected = 0;
     private double companyNameNoCompanyDomain = 0;
     private double companyName = 0;
+
+    String[] tokens;
     private double misspelling = 0;
     private double feelings = 0;
     private double changeTopic = 0;
+
     public String reasons = "";
     boolean debug = true;
     private double saveScoreUser = 0;
@@ -244,7 +247,7 @@ public class Email {
             phishing = -1;
             scoreUser = 100;
         }else {
-            phishing = 0.35 * scoreSubject;
+            phishing = 0.35 * scoreSubject * scoreText;
         }
         System.out.println("=======Cosas del phishing final========");
         System.out.println("Score User " + scoreUser);
@@ -364,7 +367,12 @@ public class Email {
         ResultSet rs = pStmnt.executeQuery();
         if(rs.next()){
             int truth = rs.getInt("truth");
-
+            for (String word : tokens) {
+                if (!auxClass.spellChecker.isCorrect(word)) {
+                    misspelling--;
+                    break;
+                }
+            }
             return truth >= 7;
         }
         return false;
@@ -377,7 +385,7 @@ public class Email {
         int numCoincidences = 0;
 
         // Tokenizar la frase
-        String[] tokens = tokenizer.tokenize(frase);
+        tokens = tokenizer.tokenize(frase);
         System.out.println("\n"+tokens.length);
         ArrayList<String> potentialTokens = new ArrayList<>();
 
@@ -410,7 +418,7 @@ public class Email {
             }
         }
 
-        return numCoincidences/tokens.length*0.15;
+        return -numCoincidences/tokens.length*0.15;
     }
 
     public boolean checkHashMaps(String phrase, HashMap<String, String>... hashMaps) {

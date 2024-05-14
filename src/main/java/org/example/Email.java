@@ -304,11 +304,11 @@ public class Email {
                 }
                 int phishingEmails = 1;
                 String query2 = "SELECT nPhishingEmails FROM Users WHERE email = ?";
-                PreparedStatement phisingQuery = dataBase.prepareStatement(query);
+                PreparedStatement phisingQuery = dataBase.prepareStatement(query2);
                 phisingQuery.setString(1,sender);
                 ResultSet emailNumberQuery2 = phisingQuery.executeQuery();
                 if(emailNumberQuery2.next()){
-                    phishingEmails = emailNumberQuery.getInt("nPhishingEmails");
+                    phishingEmails = emailNumberQuery2.getInt("nPhishingEmails");
                 }
                 double scoreUserFinal = scoreUser + amount*(sentEmails-phishingEmails);
                 if(scoreUserFinal < 0){

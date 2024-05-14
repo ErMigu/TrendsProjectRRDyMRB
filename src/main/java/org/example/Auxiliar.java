@@ -17,6 +17,9 @@ public class Auxiliar {
     public HashMap<String,String> fearPhrases;
     public HashMap<String,String> interestPhrases;
     public HashMap<String,String> urgencyPhrases;
+    public HashMap<String,String> bankingPhrases;
+    public HashMap<String,String> accountsPhrases;
+    public HashMap<String,String> workPhrases;
 
     DB dataBase;
 
@@ -27,7 +30,10 @@ public class Auxiliar {
         fearPhrases = new HashMap<>();
         interestPhrases = new HashMap<>();
         urgencyPhrases = new HashMap<>();
-        try (BufferedReader br = new BufferedReader(new FileReader("subjectTopics.txt"))) {
+        bankingPhrases = new HashMap<>();
+        accountsPhrases = new HashMap<>();
+        workPhrases = new HashMap<>();
+        try (BufferedReader br = new BufferedReader(new FileReader("Dictionaries/subjectTopics.txt"))) {
             String line;
             while ((line = br.readLine()) != null) {
                 subjectTopics.put(line.trim(), "topic");
@@ -55,6 +61,9 @@ public class Auxiliar {
             loadPhrases("Dictionaries/interest_phrases.txt", interestPhrases);
             loadPhrases("Dictionaries/urgency_phrases.txt", urgencyPhrases);
             loadPhrases("Dictionaries/confusion_phrases.txt", confusionPhrases);
+            loadPhrases("Dictionaries/accounts_phrases.txt",accountsPhrases);
+            loadPhrases("Dictionaries/working_phrases.txt",workPhrases);
+            loadPhrases("Dictionaries/banking_phrases.txt",bankingPhrases);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -101,5 +110,17 @@ public class Auxiliar {
 
     public HashMap<String, String> getInterestPhrases() {
         return interestPhrases;
+    }
+
+    public HashMap<String, String> getBankingPhrases() {
+        return bankingPhrases;
+    }
+
+    public HashMap<String, String> getAccountsPhrases() {
+        return accountsPhrases;
+    }
+
+    public HashMap<String, String> getWorkPhrases() {
+        return workPhrases;
     }
 }

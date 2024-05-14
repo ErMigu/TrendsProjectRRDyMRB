@@ -1,6 +1,6 @@
 CREATE TABLE Users (
     email TEXT PRIMARY KEY,
-    truth INTEGER,
+    truth DOUBLE PRECISION,
     nEmailsSent INTEGER,
     nPhishingEmails INTEGER
 );

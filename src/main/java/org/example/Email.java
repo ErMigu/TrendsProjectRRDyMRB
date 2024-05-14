@@ -60,7 +60,7 @@ public class Email {
                 }else{
                     System.out.println("Non trusty domain");
                     //If the company domain is not in the database lets check if it's the type amazon -> amazonn
-                    q = "SELECT domain FROM CompanyDomains WHERE similarity(domain, ?) BETWEEN 1 AND 2";
+                    q = "SELECT domain FROM CompanyDomains WHERE levenshtein(CAST(? AS text),CAST(domain AS TEXT)) BETWEEN 1 AND 2";
                     PreparedStatement checkCompanyName = dataBase.prepareStatement(q);
                     checkCompanyName.setString(1,domain);
                     ResultSet resultCompanyName = checkCompanyName.executeQuery();

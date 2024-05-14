@@ -2,12 +2,15 @@ package org.example;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.GridLayout;
 import java.sql.SQLException;
 
 public class GUI {
+    private static int width = 400;
+    private static int height = 300;
     public static void main(String[] args) {
         JFrame frame = new JFrame("Enviar Email");
-        frame.setSize(400, 300);
+        frame.setSize(width, height);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // Crear campos de texto
@@ -44,17 +47,19 @@ public class GUI {
 
         // Crear panel y agregar componentes
         JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(0, 2, 0, 40)); // GridLayout con dos columnas y espacio vertical de 10
+
         panel.add(new JLabel("Email:"));
         panel.add(emailField);
         panel.add(new JLabel("Asunto:"));
         panel.add(subjectField);
         panel.add(new JLabel("Texto:"));
         panel.add(textField);
+        panel.add(new JLabel()); // Espacio en blanco para el botón
         panel.add(enviarButton);
 
         // Agregar panel al marco
         frame.getContentPane().add(panel);
-
         // Mostrar la ventana
         frame.setVisible(true);
 

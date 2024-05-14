@@ -21,4 +21,5 @@ INSERT INTO CompanyDomains (company, domain) VALUES
 
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
-CREATE INDEX idx_domain_trgm ON CompanyDomains USING gin (domain gin_trgm_ops);
+CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
+

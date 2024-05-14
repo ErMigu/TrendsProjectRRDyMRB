@@ -429,6 +429,72 @@ public class Email {
         }
         return false;
     }
+
+    public void processTopic() {
+        HashMap<String,String> banking_phrases = auxClass.getBankingPhrases();
+        HashMap<String,String> account_phrases = auxClass.getAccountsPhrases();
+        HashMap<String,String> working_phrases = auxClass.getWorkPhrases();
+        String rutaModelo = "Assets/en-pos-maxent.bin";
+        int numBanking = 0;
+        int numAccount = 0;
+        int numWorking = 0;
+
+        try (InputStream modelIn = new FileInputStream(rutaModelo)) {
+            // Cargar el modelo POS pre-entrenado
+            POSModel posModel = new POSModel(modelIn);
+            POSTaggerME posTagger = new POSTaggerME(posModel);
+
+            // Tokenizar la frase
+            SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
+
+
+
+            // Tokenizar la frase
+            String[] tokens = tokenizer.tokenize(text.toLowerCase());
+            System.out.println("\n"+tokens.length);
+            ArrayList<String> potentialTokens = new ArrayList<>();
+
+            // Etiquetar las palabras con sus categorías gramaticales
+            String[] tags = posTagger.tag(tokens);
+
+            // Filtrar palabras con significado semántico
+            for (int i = 0; i < tokens.length; i++) {
+                if (tags[i].startsWith("N") || // Sustantivos
+                        tags[i].startsWith("V") || // Verbos
+                        tags[i].startsWith("J") || // Adjetivos
+                        tags[i].startsWith("R")) { // Adverbios
+                    potentialTokens.add(tokens[i]);
+                }
+            }
+
+            // Verificar combinaciones de 2 palabras
+            for (int i = 0; i < potentialTokens.size() - 1; i++) {
+                String combo2 = potentialTokens.get(i) + " " + potentialTokens.get(i + 1);
+                if (checkHashMaps(combo2, banking_phrases)) {
+                    numBanking++;
+                } else if (checkHashMaps(combo2,working_phrases)) {
+                    numWorking++;
+                } else if (checkHashMaps(combo2,account_phrases)) {
+                    numAccount++;
+                }
+            }
+
+            // Verificar combinaciones de 3 palabras
+            for (int i = 0; i < potentialTokens.size() - 2; i++) {
+                String combo3 = potentialTokens.get(i) + " " + potentialTokens.get(i + 1) + " " + potentialTokens.get(i + 2);
+                if (checkHashMaps(combo3, banking_phrases)) {
+                    numBanking++;
+                } else if (checkHashMaps(combo3,working_phrases)) {
+                    numWorking++;
+                } else if (checkHashMaps(combo3,account_phrases)) {
+                    numAccount++;
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
 
 

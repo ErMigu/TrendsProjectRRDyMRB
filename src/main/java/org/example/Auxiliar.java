@@ -15,15 +15,15 @@ import java.util.List;
 import java.io.File;
 
 public class Auxiliar {
-    public HashMap<String,String> subjectTopics;
-    public HashMap<String,String> confusionPhrases;
-    public HashMap<String,String> excitementPhrases;
-    public HashMap<String,String> fearPhrases;
-    public HashMap<String,String> interestPhrases;
-    public HashMap<String,String> urgencyPhrases;
-    public HashMap<String,String> bankingPhrases;
-    public HashMap<String,String> accountsPhrases;
-    public HashMap<String,String> workPhrases;
+    private HashMap<String,String> subjectTopics;
+    private HashMap<String,String> confusionPhrases;
+    private HashMap<String,String> excitementPhrases;
+    private HashMap<String,String> fearPhrases;
+    private HashMap<String,String> interestPhrases;
+    private HashMap<String,String> urgencyPhrases;
+    private HashMap<String,String> bankingPhrases;
+    private HashMap<String,String> accountsPhrases;
+    private HashMap<String,String> workPhrases;
     SpellDictionaryHashMap dictionary;
     SpellChecker spellChecker;
 
@@ -99,6 +99,7 @@ public class Auxiliar {
 
         List<String> lines = Files.readAllLines(Paths.get(filePath));
         for (String line : lines) {
+            line = line.toLowerCase();
             phrasesMap.put(line, line);
         }
     }

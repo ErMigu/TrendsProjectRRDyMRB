@@ -43,7 +43,7 @@ public class Main {
             System.out.println("Processing legitimate emails:");
             for (String frase : con) {
                 frase=frase.toLowerCase();
-                int numCoincidences = processEmail(frase, posTagger, tokenizer, confusionPhrases, excitementPhrases, fearPhrases, interestPhrases, urgencyPhrases);
+                int numCoincidences = processTopic(frase);
                 System.out.println("Email: " + frase);
                 System.out.println("Number of coincidences: " + numCoincidences);
             }
@@ -52,7 +52,7 @@ public class Main {
             System.out.println("\nProcessing phishing emails:");
             for (String frase : sin) {
                 frase=frase.toLowerCase();
-                int numCoincidences = processEmail(frase, posTagger, tokenizer, confusionPhrases, excitementPhrases, fearPhrases, interestPhrases, urgencyPhrases);
+                int numCoincidences = processTopic(frase);
                 System.out.println("Email: " + frase);
                 System.out.println("Number of coincidences: " + numCoincidences);
             }
@@ -112,6 +112,84 @@ public class Main {
         }
         return false;
     }
+
+    public static int processTopic(String frase) {
+        HashMap<String,String> banking_phrases = auxClass.getBankingPhrases();
+        HashMap<String,String> account_phrases = auxClass.getAccountsPhrases();
+        HashMap<String,String> working_phrases = auxClass.getWorkPhrases();
+        String rutaModelo = "Assets/en-pos-maxent.bin";
+        int numBanking = 0;
+        int numAccount = 0;
+        int numWorking = 0;
+
+        try (InputStream modelIn = new FileInputStream(rutaModelo)) {
+            // Cargar el modelo POS pre-entrenado
+            POSModel posModel = new POSModel(modelIn);
+            POSTaggerME posTagger = new POSTaggerME(posModel);
+
+            // Tokenizar la frase
+            SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
+
+
+
+            // Tokenizar la frase
+            String[] tokens = tokenizer.tokenize(frase.toLowerCase());
+            ArrayList<String> potentialTokens = new ArrayList<>();
+
+            // Etiquetar las palabras con sus categorías gramaticales
+            String[] tags = posTagger.tag(tokens);
+
+            // Filtrar palabras con significado semántico
+            for (int i = 0; i < tokens.length; i++) {
+                if (tags[i].startsWith("N") || // Sustantivos
+                        tags[i].startsWith("V") || // Verbos
+                        tags[i].startsWith("J") || // Adjetivos
+                        tags[i].startsWith("R")) { // Adverbios
+                    potentialTokens.add(tokens[i]);
+                }
+            }
+
+            // Verificar combinaciones de 2 palabras
+            for (int i = 0; i < potentialTokens.size() - 1; i++) {
+                String combo2 = potentialTokens.get(i);
+                if (checkHashMaps(combo2, banking_phrases)) {
+                    numBanking++;
+                } else if (checkHashMaps(combo2,working_phrases)) {
+                    numWorking++;
+                } else if (checkHashMaps(combo2,account_phrases)) {
+                    numAccount++;
+                }
+            }
+
+
+            System.out.println("Bank:" + numBanking);
+            System.out.println("Account: " + numAccount);
+            System.out.println("Work: " + numWorking);
+            return encontrarMaximo(numBanking,numAccount,numWorking);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    public static int encontrarMaximo(int num1, int num2, int num3) {
+        if(num1 == num2 && num2 == num3){
+            return -5;
+        }
+        int max = num1; // Supongamos que num1 es el mayor inicialmente
+
+        if (num2 > max) {
+            max = num2; // Si num2 es mayor que el actual máximo, actualiza max
+        }
+
+        if (num3 > max) {
+            max = num3; // Si num3 es mayor que el actual máximo, actualiza max
+            return 3;
+        }else if(max == num2){
+            return 2;
+        }else return 1;
+        // Devuelve el máximo encontrado
+    }
 }
 
 
@@ -123,3 +201,4 @@ public class Main {
 // palabras/frases que se encontrarían en un mail calificado como "phishing" o "posible estafa". Las frases que añadas podran tener un numero menor o igual a 3 palabras y cada una de esas palabras que compone cada frase debera de ser un sustantivo, un verbo, un adjetivo, o un adverbio PORFAVOR (obio toodo en ingles)
 
 //PROBLEMA CON APOSTROFES, se eliminaran todos por fallo en NLP don't -> dont
+

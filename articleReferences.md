@@ -145,3 +145,6 @@ sensitive information such as bank details and credit card numbers,
 by sending malicious links to the user that leads to the fake web
 establishment. Others name emails as the only attack vector. For
 instance, PishTank (2006) defines phishing as “a fraudulent
+
+# Dictionary english
+https://github.com/dwyl/english-words/blob/master/words.txt

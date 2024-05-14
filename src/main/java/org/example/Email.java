@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Email {
@@ -336,13 +337,7 @@ public class Email {
         HashMap<String, String> fearPhrases = auxClass.getFearPhrases();
         HashMap<String, String> interestPhrases = auxClass.getUrgencyPhrases();
         HashMap<String, String> urgencyPhrases = auxClass.getInterestPhrases();
-
-
-        // Ruta al modelo POS pre-entrenado
-        String rutaModelo = "/home/kelokeisik/Escritorio/Uni/Trends/ProjectRRDyMRBTrends/project/Assets/en-pos-maxent.bin";
-
-        // Frase de ejemplo
-        String frase = text;
+        String rutaModelo = "Assets/en-pos-maxent.bin";
 
         try (InputStream modelIn = new FileInputStream(rutaModelo)) {
             // Cargar el modelo POS pre-entrenado
@@ -351,23 +346,80 @@ public class Email {
 
             // Tokenizar la frase
             SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
-            String[] tokens = tokenizer.tokenize(frase);
 
-            // Etiquetar las palabras con sus categorías gramaticales
-            String[] tags = posTagger.tag(tokens);
+            double score = processEmail(text.toLowerCase(), posTagger, tokenizer, confusionPhrases, excitementPhrases, fearPhrases, interestPhrases, urgencyPhrases);
+            System.out.println("Email: " + text);
+            System.out.println("Score: " + score);
 
-            // Filtrar palabras con significado semántico
-            for (int i = 0; i < tokens.length; i++) {
-                if (tags[i].startsWith("N") || // Sustantivos
-                        tags[i].startsWith("V") || // Verbos
-                        tags[i].startsWith("J") || // Adjetivos
-                        tags[i].startsWith("R")) { // Adverbios
-                    System.out.println(tokens[i]);
-                }
-            }
+            feelings=score;
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public Boolean checkMisspelling() throws SQLException {
+        String q = "SELECT truth FROM Users WHERE \"email\" = ?";
+        PreparedStatement pStmnt = dataBase.prepareStatement(q);
+        pStmnt.setString(1, sender);
+        ResultSet rs = pStmnt.executeQuery();
+        if(rs.next()){
+            int truth = rs.getInt("truth");
+
+            return truth >= 7;
+        }
+        return false;
+    }
+
+    public double processEmail(String frase, POSTaggerME posTagger, SimpleTokenizer tokenizer,
+                                    HashMap<String, String> confusionPhrases, HashMap<String, String> excitementPhrases,
+                                    HashMap<String, String> fearPhrases, HashMap<String, String> interestPhrases,
+                                    HashMap<String, String> urgencyPhrases) {
+        int numCoincidences = 0;
+
+        // Tokenizar la frase
+        String[] tokens = tokenizer.tokenize(frase);
+        System.out.println("\n"+tokens.length);
+        ArrayList<String> potentialTokens = new ArrayList<>();
+
+        // Etiquetar las palabras con sus categorías gramaticales
+        String[] tags = posTagger.tag(tokens);
+
+        // Filtrar palabras con significado semántico
+        for (int i = 0; i < tokens.length; i++) {
+            if (tags[i].startsWith("N") || // Sustantivos
+                    tags[i].startsWith("V") || // Verbos
+                    tags[i].startsWith("J") || // Adjetivos
+                    tags[i].startsWith("R")) { // Adverbios
+                potentialTokens.add(tokens[i]);
+            }
+        }
+
+        // Verificar combinaciones de 2 palabras
+        for (int i = 0; i < potentialTokens.size() - 1; i++) {
+            String combo2 = potentialTokens.get(i) + " " + potentialTokens.get(i + 1);
+            if (checkHashMaps(combo2, confusionPhrases, excitementPhrases, fearPhrases, interestPhrases, urgencyPhrases)) {
+                numCoincidences++;
+            }
+        }
+
+        // Verificar combinaciones de 3 palabras
+        for (int i = 0; i < potentialTokens.size() - 2; i++) {
+            String combo3 = potentialTokens.get(i) + " " + potentialTokens.get(i + 1) + " " + potentialTokens.get(i + 2);
+            if (checkHashMaps(combo3, confusionPhrases, excitementPhrases, fearPhrases, interestPhrases, urgencyPhrases)) {
+                numCoincidences++;
+            }
+        }
+
+        return numCoincidences/tokens.length*0.15;
+    }
+
+    public boolean checkHashMaps(String phrase, HashMap<String, String>... hashMaps) {
+        for (HashMap<String, String> hashMap : hashMaps) {
+            if (hashMap.containsValue(phrase)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

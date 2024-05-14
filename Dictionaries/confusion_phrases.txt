@@ -21,6 +21,9 @@ unexpected contact
 confusing transaction
 unknown link
 unfamiliar sender
+download and install
+please log in
+verify your identity
 unexpected alert
 confusing error
 strange email

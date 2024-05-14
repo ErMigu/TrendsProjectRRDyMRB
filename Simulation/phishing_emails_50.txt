@@ -48,3 +48,18 @@ Account Compromised: Congratulations! You've won a $1000 gift card. To claim you
 Unauthorized Purchase: You have an unauthorized purchase on your account. Confirm your details here: [phishing link]. Ignoring this may lead to account suspension.
 Security Alert: Hello, we detected an unusual login attempt on your account. Please click this link to verify your identity: [phishing link]. Ignoring this will result in account termination.
 Verify Your Identity: Urgent: Your bank account has suspicious activity. Verify your identity by logging in here: [fake bank link]. If you dont respond within 24 hours, your account will be locked.
+Your password will expire in 24 hours. To keep your account active, please update your password here: [phishing link]. If you dont update it, your account will be inaccessible.
+Dear taxpayer, you are eligible for a tax refund. Please complete the online form to claim your refund: [phishing link]. If you dont respond within 48 hours, your refund will be forfeited.
+Your email account has exceeded its storage limit. Click the link to upgrade your storage: [phishing link]. If you dont upgrade, your account will be deactivated.
+We have detected suspicious activity on your social media account. Please log in to verify your account: [phishing link]. If you dont verify, your account will be locked.
+A critical update is available for your software. Click here to download and install: [phishing link]. If you dont update, your software may stop functioning.
+We need to verify your account information to ensure your security. Please click the link below: [phishing link]. If you dont verify, your account will be suspended.
+Congratulations! You have been selected for a job interview. Please fill out your details here: [phishing link]. If you dont respond within 24 hours, the offer will be withdrawn.
+We have noticed a suspicious login attempt on your account. Verify your identity here: [phishing link]. If you dont verify, your account will be compromised.
+Your invoice is overdue. Please pay the balance immediately to avoid penalties: [phishing link]. If you dont pay within 48 hours, additional fees will apply.
+We encountered an issue with your recent order delivery. Click here to confirm your address: [phishing link]. If you dont respond, your delivery will be canceled.
+Your membership is about to expire. Renew now to continue enjoying the benefits: [phishing link]. If you dont renew, your membership will be terminated.
+A new security update is available for your device. Click here to install: [phishing link]. If you dont install, your device may be vulnerable.
+We need to verify your credit card information to prevent fraud. Please update your details here: [phishing link]. If you dont verify, your card may be blocked.
+Your bank account information needs to be updated. Click here to update your details: [phishing link]. If you dont update, your account may be frozen.
+Your account has been flagged for suspicious activity. Verify your account now: [phishing link]. If you dont verify, your account will be suspended.

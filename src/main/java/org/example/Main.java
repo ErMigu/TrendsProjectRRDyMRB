@@ -70,6 +70,7 @@ public class Main {
         // Tokenizar la frase
         String[] tokens = tokenizer.tokenize(frase);
         ArrayList<String> potentialTokens = new ArrayList<>();
+        System.out.println("\n"+tokens.length);
 
         // Etiquetar las palabras con sus categorías gramaticales
         String[] tags = posTagger.tag(tokens);

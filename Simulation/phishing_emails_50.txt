@@ -1,0 +1,50 @@
+Unauthorized Purchase: Hello, we detected an unusual login attempt on your account. Please click this link to verify your identity: [phishing link]. Ignoring this will result in account termination.
+Immediate Action Required: Your subscription is expiring. Renew it now by clicking here: [phishing link]. Failure to do so will result in service termination.
+Storage Limit Reached: Important notice: Your email account is over its storage limit. Increase your storage by clicking here: [phishing link]. Failure to do so will result in email loss.
+Security Alert: Dear customer, your recent payment failed. Please update your billing information here: [phishing link]. If you dont act now, your service will be interrupted.
+Suspicious Activity: Urgent: Your bank account has suspicious activity. Verify your identity by logging in here: [fake bank link]. If you dont respond within 24 hours, your account will be locked.
+Account Compromised: Action required: Your account will be deactivated. Verify your identity here: [phishing link]. Immediate action is required to prevent this.
+Win a $1000 Gift Card: Dear user, your account has been compromised. Click the link below to secure your account immediately: [malicious link]. Failure to act now will result in account suspension.
+Verify Your Identity: Urgent: Your bank account has suspicious activity. Verify your identity by logging in here: [fake bank link]. If you dont respond within 24 hours, your account will be locked.
+Payment Failed: Security Alert: We have detected suspicious activity on your account. Verify your details here: [phishing link]. If you dont respond, your account will be compromised.
+Account Compromised: Dear customer, your recent payment failed. Please update your billing information here: [phishing link]. If you dont act now, your service will be interrupted.
+Payment Failed: Urgent: Your bank account has suspicious activity. Verify your identity by logging in here: [fake bank link]. If you dont respond within 24 hours, your account will be locked.
+Immediate Action Required: You have an unauthorized purchase on your account. Confirm your details here: [phishing link]. Ignoring this may lead to account suspension.
+Storage Limit Reached: Your subscription is expiring. Renew it now by clicking here: [phishing link]. Failure to do so will result in service termination.
+Unusual Login Attempt: Congratulations! You've won a $1000 gift card. To claim your prize, please provide your personal information here: [phishing link]. Act fast, this offer expires soon!
+Security Alert: Important notice: Your email account is over its storage limit. Increase your storage by clicking here: [phishing link]. Failure to do so will result in email loss.
+Account Compromised: Action required: Your account will be deactivated. Verify your identity here: [phishing link]. Immediate action is required to prevent this.
+Payment Failed: Action required: Your account will be deactivated. Verify your identity here: [phishing link]. Immediate action is required to prevent this.
+Account Compromised: Dear user, your account has been compromised. Click the link below to secure your account immediately: [malicious link]. Failure to act now will result in account suspension.
+Win a $1000 Gift Card: Your subscription is expiring. Renew it now by clicking here: [phishing link]. Failure to do so will result in service termination.
+Win a $1000 Gift Card: Action required: Your account will be deactivated. Verify your identity here: [phishing link]. Immediate action is required to prevent this.
+Verify Your Identity: Congratulations! You've won a $1000 gift card. To claim your prize, please provide your personal information here: [phishing link]. Act fast, this offer expires soon!
+Storage Limit Reached: You have an unauthorized purchase on your account. Confirm your details here: [phishing link]. Ignoring this may lead to account suspension.
+Win a $1000 Gift Card: Dear customer, your recent payment failed. Please update your billing information here: [phishing link]. If you dont act now, your service will be interrupted.
+Suspicious Activity: Congratulations! You've won a $1000 gift card. To claim your prize, please provide your personal information here: [phishing link]. Act fast, this offer expires soon!
+Payment Failed: You have an unauthorized purchase on your account. Confirm your details here: [phishing link]. Ignoring this may lead to account suspension.
+Immediate Action Required: Your subscription is expiring. Renew it now by clicking here: [phishing link]. Failure to do so will result in service termination.
+Storage Limit Reached: Hello, we detected an unusual login attempt on your account. Please click this link to verify your identity: [phishing link]. Ignoring this will result in account termination.
+Unauthorized Purchase: Hello, we detected an unusual login attempt on your account. Please click this link to verify your identity: [phishing link]. Ignoring this will result in account termination.
+Unusual Login Attempt: Congratulations! You've won a $1000 gift card. To claim your prize, please provide your personal information here: [phishing link]. Act fast, this offer expires soon!
+Unauthorized Purchase: Action required: Your account will be deactivated. Verify your identity here: [phishing link]. Immediate action is required to prevent this.
+Security Alert: Your subscription is expiring. Renew it now by clicking here: [phishing link]. Failure to do so will result in service termination.
+Verify Your Identity: Action required: Your account will be deactivated. Verify your identity here: [phishing link]. Immediate action is required to prevent this.
+Verify Your Identity: You have an unauthorized purchase on your account. Confirm your details here: [phishing link]. Ignoring this may lead to account suspension.
+Unauthorized Purchase: Dear user, your account has been compromised. Click the link below to secure your account immediately: [malicious link]. Failure to act now will result in account suspension.
+Verify Your Identity: Important notice: Your email account is over its storage limit. Increase your storage by clicking here: [phishing link]. Failure to do so will result in email loss.
+Immediate Action Required: Action required: Your account will be deactivated. Verify your identity here: [phishing link]. Immediate action is required to prevent this.
+Win a $1000 Gift Card: Important notice: Your email account is over its storage limit. Increase your storage by clicking here: [phishing link]. Failure to do so will result in email loss.
+Immediate Action Required: Dear customer, your recent payment failed. Please update your billing information here: [phishing link]. If you dont act now, your service will be interrupted.
+Storage Limit Reached: Dear user, your account has been compromised. Click the link below to secure your account immediately: [malicious link]. Failure to act now will result in account suspension.
+Account Compromised: You have an unauthorized purchase on your account. Confirm your details here: [phishing link]. Ignoring this may lead to account suspension.
+Security Alert: Urgent: Your bank account has suspicious activity. Verify your identity by logging in here: [fake bank link]. If you dont respond within 24 hours, your account will be locked.
+Payment Failed: Congratulations! You've won a $1000 gift card. To claim your prize, please provide your personal information here: [phishing link]. Act fast, this offer expires soon!
+Storage Limit Reached: Dear user, your account has been compromised. Click the link below to secure your account immediately: [malicious link]. Failure to act now will result in account suspension.
+Storage Limit Reached: Hello, we detected an unusual login attempt on your account. Please click this link to verify your identity: [phishing link]. Ignoring this will result in account termination.
+Suspicious Activity: Hello, we detected an unusual login attempt on your account. Please click this link to verify your identity: [phishing link]. Ignoring this will result in account termination.
+Storage Limit Reached: Security Alert: We have detected suspicious activity on your account. Verify your details here: [phishing link]. If you dont respond, your account will be compromised.
+Account Compromised: Congratulations! You've won a $1000 gift card. To claim your prize, please provide your personal information here: [phishing link]. Act fast, this offer expires soon!
+Unauthorized Purchase: You have an unauthorized purchase on your account. Confirm your details here: [phishing link]. Ignoring this may lead to account suspension.
+Security Alert: Hello, we detected an unusual login attempt on your account. Please click this link to verify your identity: [phishing link]. Ignoring this will result in account termination.
+Verify Your Identity: Urgent: Your bank account has suspicious activity. Verify your identity by logging in here: [fake bank link]. If you dont respond within 24 hours, your account will be locked.

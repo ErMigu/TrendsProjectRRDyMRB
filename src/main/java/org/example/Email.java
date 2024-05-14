@@ -1,5 +1,12 @@
 package org.example;
 
+import opennlp.tools.postag.POSModel;
+import opennlp.tools.postag.POSTaggerME;
+import opennlp.tools.tokenize.SimpleTokenizer;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -39,7 +46,7 @@ public class Email {
             pStmnt.setString(1, sender);
             ResultSet rs = pStmnt.executeQuery();
 
-            if(!rs.next()){
+            if (!rs.next()) {
                 System.out.println("User not in database");
                 //Creates values for the user
                 String email = sender;
@@ -50,21 +57,21 @@ public class Email {
                 String domain = email.substring(domainStart);
                 q = "SELECT * FROM CompanyDomains WHERE domain = ?";
                 PreparedStatement preparedstatementDomain = dataBase.prepareStatement(q);
-                preparedstatementDomain.setString(1,domain);
+                preparedstatementDomain.setString(1, domain);
                 ResultSet resultSetDomain = preparedstatementDomain.executeQuery();
-                if(resultSetDomain.next()){
+                if (resultSetDomain.next()) {
                     System.out.println(resultSetDomain.getString("domain"));
                     //if it comes from a known source we increase the truth
                     System.out.println("Trusty domain");
                     scoreUser++;
-                }else{
+                } else {
                     System.out.println("Non trusty domain");
                     //If the company domain is not in the database lets check if it's the type amazon -> amazonn
                     q = "SELECT domain FROM CompanyDomains WHERE levenshtein(CAST(? AS text),CAST(domain AS TEXT)) BETWEEN 1 AND 2";
                     PreparedStatement checkCompanyName = dataBase.prepareStatement(q);
-                    checkCompanyName.setString(1,domain);
+                    checkCompanyName.setString(1, domain);
                     ResultSet resultCompanyName = checkCompanyName.executeQuery();
-                    if(resultCompanyName.next()) {
+                    if (resultCompanyName.next()) {
                         System.out.println("Dangerous domain");
                         scoreUser--;
                     }
@@ -76,77 +83,117 @@ public class Email {
                 pstMnt.setString(1, email);
                 pstMnt.setInt(2, scoreUser);
                 pstMnt.setInt(3, emailsSent);
-                pstMnt.setInt(4,phishingEmails);
-                int insertionCompleted  = pstMnt.executeUpdate();
-                if(insertionCompleted > 0){
+                pstMnt.setInt(4, phishingEmails);
+                int insertionCompleted = pstMnt.executeUpdate();
+                if (insertionCompleted > 0) {
                     System.out.println("Inserted email");
                 }
-            }else{
+            } else {
                 scoreUser = rs.getInt("truth");
                 System.out.println("User in database, truth: " + scoreUser);
             }
 
             dataBase.disconnect();
-        }catch(SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
     }
 
-    public void checkSubject(){
+    public void checkSubject() {
         int score = 0;
         String[] words = subject.split(" ");
-        HashMap<String,String> subjectTopics = auxClass.getSubjectTopics();
+        HashMap<String, String> subjectTopics = auxClass.getSubjectTopics();
 
-        try{
+        try {
             dataBase.connect();
 
             for (String word : words) {
                 System.out.println(word);
                 if (subjectTopics.containsKey(word)) {
-                    if(subjectTopics.get(word).equals("company")){
+                    if (subjectTopics.get(word).equals("company")) {
                         int domainStart = sender.indexOf("@");
                         String domain = sender.substring(domainStart);
                         String domainQuery = "SELECT * FROM companyDomains WHERE domain = ?";
                         try {
                             PreparedStatement searchDomain = dataBase.prepareStatement(domainQuery);
-                            searchDomain.setString(1,domain);
+                            searchDomain.setString(1, domain);
                             ResultSet resultSearchDomain = searchDomain.executeQuery();
-                            if(resultSearchDomain.next()){
+                            if (resultSearchDomain.next()) {
                                 String name = resultSearchDomain.getString("domain");
                                 int dotPosition = name.lastIndexOf(".");
-                                String cleanName = name.substring(1,dotPosition);
+                                String cleanName = name.substring(1, dotPosition);
                                 //If the subject contains amazon and comes from @amazon.com -> trust
-                                if(word.equalsIgnoreCase(cleanName)){
+                                if (word.equalsIgnoreCase(cleanName)) {
                                     score = 1;
                                     System.out.println("Contains company and comes from official mail");
                                     break;
-                                }else{
+                                } else {
                                     //If the subject contains amazon but comes from nvidia -> no trustç
                                     System.out.println("Contains company but comes from other official mail");
                                     score--;
                                 }
 
-                            }else{
+                            } else {
                                 System.out.println("Contains company but doesn't come from official mail");
                                 score--;
                             }
-                        }catch(SQLException e){
+                        } catch (SQLException e) {
                             e.printStackTrace();
                         }
-                    }else{
+                    } else {
                         System.out.println("Contains keyword");
                         score--;
                     }
 
                 }
             }
-            if(score < 0){
+            if (score < 0) {
                 scoreSubject = -1;
-            }else scoreSubject = score;
+            } else scoreSubject = score;
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public void checkFeelings() {
+        HashMap<String, String> confusionPhrases = auxClass.getConfusionPhrases();
+        HashMap<String, String> excitementPhrases = auxClass.getExcitementPhrases();
+        HashMap<String, String> fearPhrases = auxClass.getFearPhrases();
+        HashMap<String, String> interestPhrases = auxClass.getUrgencyPhrases();
+        HashMap<String, String> urgencyPhrases = auxClass.getInterestPhrases();
+
+
+        // Ruta al modelo POS pre-entrenado
+        String rutaModelo = "/home/kelokeisik/Escritorio/Uni/Trends/ProjectRRDyMRBTrends/project/Assets/en-pos-maxent.bin";
+
+        // Frase de ejemplo
+        String frase = text;
+
+        try (InputStream modelIn = new FileInputStream(rutaModelo)) {
+            // Cargar el modelo POS pre-entrenado
+            POSModel posModel = new POSModel(modelIn);
+            POSTaggerME posTagger = new POSTaggerME(posModel);
+
+            // Tokenizar la frase
+            SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
+            String[] tokens = tokenizer.tokenize(frase);
+
+            // Etiquetar las palabras con sus categorías gramaticales
+            String[] tags = posTagger.tag(tokens);
+
+            // Filtrar palabras con significado semántico
+            for (int i = 0; i < tokens.length; i++) {
+                if (tags[i].startsWith("N") || // Sustantivos
+                        tags[i].startsWith("V") || // Verbos
+                        tags[i].startsWith("J") || // Adjetivos
+                        tags[i].startsWith("R")) { // Adverbios
+                    System.out.println(tokens[i]);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

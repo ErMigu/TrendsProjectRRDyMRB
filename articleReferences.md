@@ -151,8 +151,9 @@ instance, PishTank (2006) defines phishing as “a fraudulent
 https://github.com/dwyl/english-words/blob/master/words.txt
 
 Papers used:
+Alkhalil, Z., Hewage, C., Nawaf, L., & Khan, I. (2021). Phishing Attacks: A Recent Comprehensive Study and a New Anatomy (Version 1). Cardiff Metropolitan University. https://doi.org/10.3389/fcomp.2021.563060
+Baykara, M., & Gurel, Z. (2018). Detection of phishing attacks. In Proceedings of the 2018 6th International Symposium on Digital Forensic and Security (ISDFS) (pp. 1-5). IEEE. https://doi.org/10.1109/ISDFS.2018.8355389
 Ferreira, A., Teles, S., Chilro, R., & Sosa, M. (2020). Netphishing: Network and linguistic analysis of phishing email subject lines. In Proceedings of the International Conference on Information Systems Security and Privacy (ICISSP) (pp. 250-257). SCITEPRESS. https://doi.org/10.5220/0009407202500257
-Sharma, T., & Bashir, M. (2020). An analysis of phishing emails and how human vulnerabilities are exploited. In I. Corradini, E. Nardelli, & T. Ahram (Eds.), Advances in human factors in cybersecurity. AHFE 2020. Advances in intelligent systems and computing (Vol. 1219). Springer, Cham. https://doi.org/10.1007/978-3-030-52581-1_7
-Sankhwar, S., Pandey, D., Khan, R., & Mohanty, S. (2020). An anti-phishing enterprise environ model using feed-forward backpropagation and Levenberg-Marquardt method. Security and Privacy, 4(e132). https://doi.org/10.1002/spy2.132
-
 Rastenis, J., Ramanauskaitė, S., Janulevičius, J., Cenys, A., Slotkiene, A., & Pakrijauskas, K. (2020). E-mail-based phishing attack taxonomy. Applied Sciences, 10(7), 2363. https://doi.org/10.3390/app10072363
+Sankhwar, S., Pandey, D., Khan, R., & Mohanty, S. (2020). An anti-phishing enterprise environ model using feed-forward backpropagation and Levenberg-Marquardt method. Security and Privacy, 4(e132). https://doi.org/10.1002/spy2.132
+Sharma, T., & Bashir, M. (2020). An analysis of phishing emails and how human vulnerabilities are exploited. In I. Corradini, E. Nardelli, & T. Ahram (Eds.), Advances in human factors in cybersecurity. AHFE 2020. Advances in intelligent systems and computing (Vol. 1219). Springer, Cham. https://doi.org/10.1007/978-3-030-52581-1_7

@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Email {
-    public Integer score = 0;
     public String sender;
     public String subject;
     public String text;
@@ -22,7 +21,7 @@ public class Email {
     private final Auxiliar auxClass;
 
     private final DB dataBase;
-    private double scoreUser = 0;
+    private double scoreUser = 1;
     private double scoreSubject = 0;
     private double scoreText = 0;
     private double notKnownDomain = 0;
@@ -31,15 +30,17 @@ public class Email {
     private double companyNameNoCompanyDomain = 0;
     private double companyName = 0;
 
-    String[] tokens;
     private double misspelling = 0;
     private double feelings = 0;
     private double changeTopic = 0;
 
     public String reasons = "";
     boolean debug = true;
-    private double saveScoreUser = 0;
     boolean debug2 = false;
+    double phishingScore = 0;
+    boolean fakeDomain = false;
+
+    private final double MAX_PHISHING_SCORE = 0.3;
 
     public Email(String sender, String subject, String text, Auxiliar aux) {
         this.sender = sender;
@@ -50,7 +51,6 @@ public class Email {
     }
 
     public void checkSender() throws SQLException {
-        boolean userFound = false;
 
         try {
             dataBase.connect();
@@ -68,8 +68,6 @@ public class Email {
                 String email = sender;
                 int emailsSent = 0;
                 int phishingEmails = 0;
-                double defaultValue = 1;
-
                 int domainStart = email.indexOf("@");
                 String domain = email.substring(domainStart);
                 q = "SELECT * FROM CompanyDomains WHERE domain = ?";
@@ -94,18 +92,19 @@ public class Email {
                     if(resultCompanyName.next()) {
                         if(debug2)
                             System.out.println("Dangerous domain");
-                        dangerousDomain = -1;
+                        dangerousDomain = 0;
                         reasons += " The email domain is trying to impersonate a known company\n";
+                        fakeDomain = true;
                     }
-                    notKnownDomain = -1;
+                    notKnownDomain = 0;
                     reasons += " The email domain is not known\n";
                 }
 
                 //Insert user
-                q = "INSERT INTO Users (email, truth, nemailsSent, nphishingEmails, nWork, nMoney, nAccount, nRandom, lastTopics) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                q = "INSERT INTO Users (email, truth, nemailsSent, nphishingEmails, nWork, nMoney, nAccount, nRandom, lastTopics, isFakeDomain) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?)";
                 PreparedStatement pstMnt = dataBase.prepareStatement(q);
                 pstMnt.setString(1, email);
-                pstMnt.setDouble(2, defaultValue);
+                pstMnt.setDouble(2, scoreUser);
                 pstMnt.setInt(3, emailsSent);
                 pstMnt.setInt(4,phishingEmails);
                 pstMnt.setInt(5, 0);
@@ -113,6 +112,7 @@ public class Email {
                 pstMnt.setInt(7, 0);
                 pstMnt.setInt(8,0);
                 pstMnt.setString(9, "");
+                pstMnt.setBoolean(10,fakeDomain);
                 int insertionCompleted  = pstMnt.executeUpdate();
                 if(insertionCompleted > 0){
                     if(debug2)
@@ -120,36 +120,36 @@ public class Email {
                 }
             }else{
                 scoreUser = rs.getInt("truth");
-                saveScoreUser = scoreUser;
-                userFound = true;
                 if(debug2)
                     System.out.println("User in database, truth: " + scoreUser);
+                fakeDomain = rs.getBoolean("isFakeDomain");
+                if(fakeDomain){
+                    reasons += " The email domain is trying to impersonate a known company\n";
+                }
             }
 
             dataBase.disconnect();
         }catch(SQLException e){
             e.printStackTrace();
         }
-        if(scoreUser == 0 && !userFound){
-            if(dangerousDomain == -1){
-                scoreUser = -2;
-            }else {
-                scoreUser = Math.min(notKnownDomain,2*dangerousDomain);
-            }
-            if(debug) {
-                System.out.println("======Cosas del usuario al mirar correo=======");
-                System.out.println("Score usuario: " + scoreUser);
-                System.out.println("Score domain: " + notKnownDomain);
-                System.out.println("Score dangerousDomain: " + dangerousDomain);
-                System.out.println("================================");
-            }
+
+        if(debug) {
+            System.out.println("======Cosas del usuario al mirar correo=======");
+            System.out.println("Score usuario: " + scoreUser);
+            System.out.println("Score domain: " + notKnownDomain);
+            System.out.println("Score dangerousDomain: " + dangerousDomain);
+            System.out.println("================================");
         }
+
+
     }
 
     public void checkSubject(){
         String[] words = subject.split(" ");
         HashMap<String,String> subjectTopics = auxClass.getSubjectTopics();
-
+        boolean changedCompanyDomain = false;
+        boolean changedCompanyDomainAndDomain = false;
+        boolean changedCautionWord = false;
         try{
             dataBase.connect();
 
@@ -178,29 +178,32 @@ public class Email {
                                         System.out.println("Contains company and comes from official mail");
                                     companyNameNoCompanyDomain++;
                                     companyName = 1;
-                                    if(companyNameNoCompanyDomain > 1){
-                                        companyNameNoCompanyDomain = 1;
+                                    if(companyNameNoCompanyDomain < 0){
+                                        companyNameNoCompanyDomain = 0;
                                     }
+                                    changedCompanyDomainAndDomain = true;
                                     break;
                                 }else{
                                     //If the subject contains amazon but comes from nvidia -> no trust
                                     if(debug2) {
                                         System.out.println("Contains company but comes from other official mail");
                                     }
-                                    companyNameNoCompanyDomain--;
-                                    if(companyNameNoCompanyDomain < -1){
-                                        companyNameNoCompanyDomain = -1;
+                                    companyNameNoCompanyDomain++;
+                                    if(companyNameNoCompanyDomain > 1){
+                                        companyNameNoCompanyDomain = 1;
                                     }
+                                    changedCompanyDomainAndDomain = true;
                                 }
 
                             }else{
                                 if(debug2) {
                                     System.out.println("Contains company but doesn't come from official mail");
                                 }
-                                companyName--;
-                                if(companyName < -1){
-                                    companyName = -1;
+                                companyName++;
+                                if(companyName > 1){
+                                    companyName = 1;
                                 }
+                                changedCompanyDomain = true;
 
                             }
                         }catch(SQLException e){
@@ -210,27 +213,28 @@ public class Email {
                         if(debug2) {
                             System.out.println("Contains keyword");
                         }
-                        cautionWordDetected -= 1;
-                        if(cautionWordDetected < -1){
-                            cautionWordDetected = -1;
+                        cautionWordDetected++;
+                        if(cautionWordDetected > 1){
+                            cautionWordDetected = 1;
                         }
+                        changedCautionWord = true;
                     }
 
                 }
             }
-            scoreSubject = 0.2 * cautionWordDetected + 0.1 * companyName + 0.7 * companyNameNoCompanyDomain;
-            if(scoreSubject < -1){
-                scoreSubject = -1;
+            scoreSubject = 0.5 * cautionWordDetected + 0.1 * companyName + 0.4 * companyNameNoCompanyDomain;
+            if(scoreSubject < 0){
+                scoreSubject = 0;
             }else if(scoreSubject > 1){
                 scoreSubject = 1;
             }
-            if(companyName <= -1){
+            if(companyName >= 1 && changedCompanyDomain){
                 reasons += " Contains company but doesn't come from official mail\n";
             }
-            if(companyNameNoCompanyDomain <= -1){
+            if(companyNameNoCompanyDomain >= 1 && changedCompanyDomainAndDomain){
                 reasons += " Contains company name in the subject but comes from other company email\n";
             }
-            if(cautionWordDetected <= -1){
+            if(cautionWordDetected >= 1 && changedCautionWord){
                 reasons += " Contains words related to most phishing cases in the subject\n";
             }
             if(debug){
@@ -247,95 +251,67 @@ public class Email {
     }
 
     public void checkValuesPhishing(){
-        double phishing = 0;
-        if(scoreUser == -2){
-            phishing = -1;
-            scoreUser = 100;
+        boolean scam;
+        int phishingEmails = 0;
+        double truth = 1;
+        if(fakeDomain){
+            System.out.println("=*=*=*=*=*=*=*=*ES PHISHING*=*=*=*=*=*=*=");
+            scam = true;
+            phishingScore = 1;
         }else {
-            phishing = 0.35 * scoreSubject * 0.65* scoreText;
-        }
-        System.out.println("=======Cosas del phishing final========");
-        System.out.println("Score User " + scoreUser);
-        System.out.println("Score Subject " + scoreSubject);
-        System.out.println("Score Text " + scoreText);
-        System.out.println("====================");
-        System.out.println(reasons);
-        System.out.println("Phishing value: " + phishing);
-
-        if(scoreUser < 0){
-            scoreUser = 0.1;
-        }
-
-        try{
-            dataBase.connect();
-            double amount = 0;
-            double score = phishing * scoreUser;
-            System.out.println("System decision phishing and user: " + score);
-            if(score < 0){
-                System.out.println("Entra en phishing");
-                amount = 0.5;
-                int phishingEmails = 1;
-                String query = "SELECT nPhishingEmails FROM Users WHERE email = ?";
-                PreparedStatement phisingQuery = dataBase.prepareStatement(query);
-                phisingQuery.setString(1,sender);
-                ResultSet emailNumberQuery = phisingQuery.executeQuery();
-                if(emailNumberQuery.next()){
-                    phishingEmails = emailNumberQuery.getInt("nPhishingEmails");
-                }
-                if(scoreUser >= 11 || scoreUser == 0.1){
-                    scoreUser = 0;
-                }
-                double scoreUserFinal = scoreUser - amount*phishingEmails;
-                if(scoreUserFinal < 0){
-                    scoreUserFinal = 0;
-                }else if(scoreUserFinal > 10){
-                    scoreUserFinal = 10;
-                }
-                String updateUser = "UPDATE users SET  truth = ?, nPhishingEmails = nPhishingEmails + 1, nEmailsSent = nEmailsSent + 1 WHERE email = ?";
-                PreparedStatement updateUserStatement = dataBase.prepareStatement(updateUser);
-                updateUserStatement.setDouble(1,scoreUserFinal);
-                updateUserStatement.setString(2,sender);
-                int checkUpdate = updateUserStatement.executeUpdate();
-                if(checkUpdate > 0 && debug){
-                    System.out.println("Update completed");
-                }
-            }else if(score >= 0){
-                System.out.println("Entra en no phishing");
-                amount = 0.5;
-                int sentEmails = 0;
-                String query = "SELECT nEmailsSent FROM Users WHERE email = ?";
-                PreparedStatement emailsQuery = dataBase.prepareStatement(query);
-                emailsQuery.setString(1,sender);
-                ResultSet emailNumberQuery = emailsQuery.executeQuery();
-                if(emailNumberQuery.next()){
-                    sentEmails = emailNumberQuery.getInt("nEmailsSent") + 1;
-                }
-                int phishingEmails = 1;
-                String query2 = "SELECT nPhishingEmails FROM Users WHERE email = ?";
-                PreparedStatement phisingQuery = dataBase.prepareStatement(query2);
-                phisingQuery.setString(1,sender);
-                ResultSet emailNumberQuery2 = phisingQuery.executeQuery();
-                if(emailNumberQuery2.next()){
-                    phishingEmails = emailNumberQuery2.getInt("nPhishingEmails");
-                }
-                double scoreUserFinal = scoreUser + amount*(sentEmails-phishingEmails);
-                if(scoreUserFinal < 0){
-                    scoreUserFinal = 0;
-                }else if(scoreUserFinal > 10){
-                    scoreUserFinal = 10;
-                }
-                String updateUser = "UPDATE users SET  truth = ?, nEmailsSent = nEmailsSent + 1 WHERE email = ?";
-                PreparedStatement updateUserStatement = dataBase.prepareStatement(updateUser);
-                updateUserStatement.setDouble(1,scoreUserFinal);
-                updateUserStatement.setString(2,sender);
-                int checkUpdate = updateUserStatement.executeUpdate();
-                if(checkUpdate > 0 && debug){
-                    System.out.println("Update completed");
-                }
+            phishingScore = (0.35 * scoreSubject + 0.65 * scoreText) / scoreUser;
+            if (phishingScore >= MAX_PHISHING_SCORE) {
+                System.out.println("=*=*=*=*=*=*=*=*ES PHISHING*=*=*=*=*=*=*=");
+                scam = true;
+            } else {
+                System.out.println("#=#=#=#=#NO ES PHISHING#=#=#=#=#");
+                scam = false;
             }
-            dataBase.disconnect();
-        }catch (SQLException exception){
+        }
+        try {
+            dataBase.connect();
+            String getInformationAboutUser = "SELECT * FROM Users WHERE email = ?";
+            PreparedStatement statementInfoUser = dataBase.prepareStatement(getInformationAboutUser);
+            statementInfoUser.setString(1,sender);
+            ResultSet informationAboutUser = statementInfoUser.executeQuery();
+            if(informationAboutUser.next()){
+                phishingEmails = informationAboutUser.getInt("nPhishingEmails");
+                truth = informationAboutUser.getDouble("truth");
+            }
+            PreparedStatement statementUpdateUser;
+            if (scam) {
+                truth = truth - 0.5 * phishingEmails;
+                if(truth < 1){
+                    truth = 1;
+                }
+                String updatePhishingUser = "UPDATE Users SET truth = ?, nEmailsSent = nEmailsSent+1, nPhishingEmails = nPhishingEmails+1 WHERE email = ?";
+                statementUpdateUser = dataBase.prepareStatement(updatePhishingUser);
+            } else {
+                truth = truth + 0.5;
+                if(truth > 10){
+                    truth = 10;
+                }
+                String updateGoodUser = "UPDATE Users SET truth = ?, nEmailsSent = nEmailsSent+1 WHERE email = ?";
+                statementUpdateUser = dataBase.prepareStatement(updateGoodUser);
+            }
+            statementUpdateUser.setDouble(1,truth);
+            statementUpdateUser.setString(2,sender);
+            int updateCompleted = statementUpdateUser.executeUpdate();
+            if(updateCompleted > 0 && debug2){
+                System.out.println("Update completed");
+            }
+
+        }catch(SQLException exception){
             exception.printStackTrace();
+        }
+        if (debug) {
+            System.out.println("=======Cosas del phishing final========");
+            System.out.println("Score User " + scoreUser);
+            System.out.println("Score Subject " + scoreSubject);
+            System.out.println("Score Text " + scoreText);
+            System.out.println("Phishing value: " + phishingScore);
+            System.out.println("====================");
+            System.out.println(reasons);
         }
     }
 
@@ -352,7 +328,7 @@ public class Email {
         int numBanking = 0;
         int numAccount = 0;
         int numWorking = 0;
-        String topic = "";
+        String topic;
         boolean reliable = false;
 
         try (InputStream modelIn = new FileInputStream(rutaModelo)) {
@@ -379,12 +355,12 @@ public class Email {
             }
 
             // Verificar combinaciones de 2 palabras para determinar el tema
-            for (int i = 0; i < potentialTokens.size(); i++) {
-                if (banking_phrases.containsValue(potentialTokens.get(i))) {
+            for (String potentialToken : potentialTokens) {
+                if (banking_phrases.containsValue(potentialToken)) {
                     numBanking++;
-                } else if (working_phrases.containsValue(potentialTokens.get(i))) {
+                } else if (working_phrases.containsValue(potentialToken)) {
                     numWorking++;
-                } else if (account_phrases.containsValue(potentialTokens.get(i))) {
+                } else if (account_phrases.containsValue(potentialToken)) {
                     numAccount++;
                 }
             }
@@ -435,6 +411,7 @@ public class Email {
                 // Comparar el nuevo valor con el mayor valor actual
                 if (Math.abs(newValue - maxCurrentValue) > 1) {
                     changeTopic = -1;
+                    reasons += " The text changes the topic of the last emails\n";
                 }
 
                 // Actualizar el valor en la base de datos
@@ -462,8 +439,16 @@ public class Email {
             }
 
             // Procesar los sentimientos
-            double score = processFeelingsAux(potentialTokens,text.toLowerCase(), posTagger, tokenizer, confusionPhrases, excitementPhrases, fearPhrases, interestPhrases, urgencyPhrases);
-            feelings = score;
+            double score = processFeelingsAux(potentialTokens,text.toLowerCase(), tokenizer, confusionPhrases, excitementPhrases, fearPhrases, interestPhrases, urgencyPhrases);
+            if(score > 1){
+                feelings = 1;
+                reasons += " The text implies feelings associated with phishing\n";
+            }else if(score <= 0){
+                feelings = 0;
+            }else{
+                feelings = score;
+                reasons += " The text implies feelings associated with phishing\n";
+            }
 
             // Verificar errores ortográficos
             String q = "SELECT truth FROM Users WHERE email = ?";
@@ -474,7 +459,9 @@ public class Email {
                 int truth = rsTruth.getInt("truth");
                 for (String word : tokens) {
                     if (!auxClass.spellChecker.isCorrect(word)) {
-                        misspelling--;
+                        System.out.println(word);
+                        misspelling = 1;
+                        reasons += " The text contains misspelling\n";
                         break;
                     }
                 }
@@ -482,7 +469,6 @@ public class Email {
             }
 
             if(debug){
-                System.out.println("Inicio del proceso de tokenización y análisis");
                 System.out.println("Determinado topic: " + changeTopic);
                 System.out.println("Scorefeelings: " + feelings);
                 System.out.println("Scoremisspelling: " + misspelling);
@@ -493,14 +479,14 @@ public class Email {
         }
 
         if(reliable){
-            scoreText=feelings*0.4+changeTopic*0.6;
+            scoreText=feelings*0.6+changeTopic*0.4;
         }else{
             scoreText=misspelling*0.7+feelings*0.15+changeTopic*0.15;
         }
     }
 
 
-    public double processFeelingsAux(ArrayList<String> potentialTokens, String frase, POSTaggerME posTagger, SimpleTokenizer tokenizer,
+    public double processFeelingsAux(ArrayList<String> potentialTokens, String frase, SimpleTokenizer tokenizer,
                                      HashMap<String, String> confusionPhrases, HashMap<String, String> excitementPhrases,
                                      HashMap<String, String> fearPhrases, HashMap<String, String> interestPhrases,
                                      HashMap<String, String> urgencyPhrases) {
@@ -525,11 +511,11 @@ public class Email {
             }
         }
 
-        if(debug2){
+        if(debug){
             System.out.println("Num coincidences for feelings: " + numCoincidences);
         }
 
-        return -numCoincidences / tokens.length * 0.15;
+        return (double) (numCoincidences ) / (tokens.length * 0.01)  ;
     }
 
 
@@ -540,6 +526,20 @@ public class Email {
             }
         }
         return false;
+    }
+
+    public String getMessage(){
+        String phishing;
+        if(phishingScore >= MAX_PHISHING_SCORE)
+            phishing = "The email contains phishing due to this reasons:\n" + reasons;
+        else{
+            if(reasons.isEmpty()){
+                phishing = "The email doesn't contains phishing";
+            }else{
+                phishing = "The email doesn't contains phishing but there are some warnings:\n" + reasons;
+            }
+        }
+        return phishing;
     }
 }
 

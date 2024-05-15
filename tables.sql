@@ -10,7 +10,8 @@ CREATE TABLE Users (
     nMoney INTEGER,
     nAccount INTEGER,
     nRandom INTEGER,
-    lastTopics TEXT
+    lastTopics TEXT,
+    isFakeDomain BOOLEAN
 );
 
 CREATE TABLE CompanyDomains(

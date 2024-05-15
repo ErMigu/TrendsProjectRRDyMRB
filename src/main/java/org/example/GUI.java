@@ -37,6 +37,9 @@ public class GUI {
                     emailObj.checkSubject();
                     emailObj.processAndCheck();
                     emailObj.checkValuesPhishing();
+                    String message = emailObj.getMessage();
+                    JOptionPane.showMessageDialog(frame, message, "Phishing overview", JOptionPane.INFORMATION_MESSAGE);
+
                 }catch (SQLException exception){
                     exception.printStackTrace();
                 }

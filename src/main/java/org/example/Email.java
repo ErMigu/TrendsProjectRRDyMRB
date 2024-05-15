@@ -102,12 +102,17 @@ public class Email {
                 }
 
                 //Insert user
-                q = "INSERT INTO Users (email, truth, nemailsSent, nphishingEmails) VALUES (?, ?, ?, ?)";
+                q = "INSERT INTO Users (email, truth, nemailsSent, nphishingEmails, nWork, nMoney, nAccount, nRandom, lastTopics) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 PreparedStatement pstMnt = dataBase.prepareStatement(q);
                 pstMnt.setString(1, email);
                 pstMnt.setDouble(2, defaultValue);
                 pstMnt.setInt(3, emailsSent);
                 pstMnt.setInt(4,phishingEmails);
+                pstMnt.setInt(5, 0);
+                pstMnt.setInt(6,0);
+                pstMnt.setInt(7, 0);
+                pstMnt.setInt(8,0);
+                pstMnt.setString(9, "");
                 int insertionCompleted  = pstMnt.executeUpdate();
                 if(insertionCompleted > 0){
                     if(debug2)
@@ -151,6 +156,7 @@ public class Email {
             for (String word : words) {
                 if(debug2)
                     System.out.println(word);
+                word=word.toLowerCase();
                 if (subjectTopics.containsKey(word)) {
                     if(subjectTopics.get(word).equalsIgnoreCase("company")){
                         if(debug2)
@@ -246,7 +252,7 @@ public class Email {
             phishing = -1;
             scoreUser = 100;
         }else {
-            phishing = 0.35 * scoreSubject * scoreText;
+            phishing = 0.35 * scoreSubject * 0.65* scoreText;
         }
         System.out.println("=======Cosas del phishing final========");
         System.out.println("Score User " + scoreUser);
@@ -333,110 +339,21 @@ public class Email {
         }
     }
 
-    public void checkFeelings() {
+    public void processAndCheck() {
+        HashMap<String, String> banking_phrases = auxClass.getBankingPhrases();
+        HashMap<String, String> account_phrases = auxClass.getAccountsPhrases();
+        HashMap<String, String> working_phrases = auxClass.getWorkPhrases();
         HashMap<String, String> confusionPhrases = auxClass.getConfusionPhrases();
         HashMap<String, String> excitementPhrases = auxClass.getExcitementPhrases();
         HashMap<String, String> fearPhrases = auxClass.getFearPhrases();
         HashMap<String, String> interestPhrases = auxClass.getUrgencyPhrases();
         HashMap<String, String> urgencyPhrases = auxClass.getInterestPhrases();
         String rutaModelo = "Assets/en-pos-maxent.bin";
-
-        try (InputStream modelIn = new FileInputStream(rutaModelo)) {
-            // Cargar el modelo POS pre-entrenado
-            POSModel posModel = new POSModel(modelIn);
-            POSTaggerME posTagger = new POSTaggerME(posModel);
-
-            // Tokenizar la frase
-            SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
-
-            double score = processFeelingsAux(text.toLowerCase(), posTagger, tokenizer, confusionPhrases, excitementPhrases, fearPhrases, interestPhrases, urgencyPhrases);
-            System.out.println("Email: " + text);
-            System.out.println("Score: " + score);
-
-            feelings=score;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public Boolean checkMisspelling() throws SQLException {
-        String q = "SELECT truth FROM Users WHERE \"email\" = ?";
-        PreparedStatement pStmnt = dataBase.prepareStatement(q);
-        pStmnt.setString(1, sender);
-        ResultSet rs = pStmnt.executeQuery();
-        if(rs.next()){
-            int truth = rs.getInt("truth");
-            for (String word : tokens) {
-                if (!auxClass.spellChecker.isCorrect(word)) {
-                    misspelling--;
-                    break;
-                }
-            }
-            return truth >= 7;
-        }
-        return false;
-    }
-
-    public double processFeelingsAux(String frase, POSTaggerME posTagger, SimpleTokenizer tokenizer,
-                                     HashMap<String, String> confusionPhrases, HashMap<String, String> excitementPhrases,
-                                     HashMap<String, String> fearPhrases, HashMap<String, String> interestPhrases,
-                                     HashMap<String, String> urgencyPhrases) {
-        int numCoincidences = 0;
-
-        // Tokenizar la frase
-        tokens = tokenizer.tokenize(frase);
-        System.out.println("\n"+tokens.length);
-        ArrayList<String> potentialTokens = new ArrayList<>();
-
-        // Etiquetar las palabras con sus categorías gramaticales
-        String[] tags = posTagger.tag(tokens);
-
-        // Filtrar palabras con significado semántico
-        for (int i = 0; i < tokens.length; i++) {
-            if (tags[i].startsWith("N") || // Sustantivos
-                    tags[i].startsWith("V") || // Verbos
-                    tags[i].startsWith("J") || // Adjetivos
-                    tags[i].startsWith("R")) { // Adverbios
-                potentialTokens.add(tokens[i]);
-            }
-        }
-
-        // Verificar combinaciones de 2 palabras
-        for (int i = 0; i < potentialTokens.size() - 1; i++) {
-            String combo2 = potentialTokens.get(i) + " " + potentialTokens.get(i + 1);
-            if (checkHashMaps(combo2, confusionPhrases, excitementPhrases, fearPhrases, interestPhrases, urgencyPhrases)) {
-                numCoincidences++;
-            }
-        }
-
-        // Verificar combinaciones de 3 palabras
-        for (int i = 0; i < potentialTokens.size() - 2; i++) {
-            String combo3 = potentialTokens.get(i) + " " + potentialTokens.get(i + 1) + " " + potentialTokens.get(i + 2);
-            if (checkHashMaps(combo3, confusionPhrases, excitementPhrases, fearPhrases, interestPhrases, urgencyPhrases)) {
-                numCoincidences++;
-            }
-        }
-
-        return -numCoincidences/tokens.length*0.15;
-    }
-
-    public boolean checkHashMaps(String phrase, HashMap<String, String>... hashMaps) {
-        for (HashMap<String, String> hashMap : hashMaps) {
-            if (hashMap.containsValue(phrase)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public void processTopic() {
-        HashMap<String,String> banking_phrases = auxClass.getBankingPhrases();
-        HashMap<String,String> account_phrases = auxClass.getAccountsPhrases();
-        HashMap<String,String> working_phrases = auxClass.getWorkPhrases();
-        String rutaModelo = "Assets/en-pos-maxent.bin";
         int numBanking = 0;
         int numAccount = 0;
         int numWorking = 0;
+        String topic = "";
+        boolean reliable = false;
 
         try (InputStream modelIn = new FileInputStream(rutaModelo)) {
             // Cargar el modelo POS pre-entrenado
@@ -461,7 +378,7 @@ public class Email {
                 }
             }
 
-            // Verificar combinaciones de 2 palabras
+            // Verificar combinaciones de 2 palabras para determinar el tema
             for (int i = 0; i < potentialTokens.size(); i++) {
                 if (banking_phrases.containsValue(potentialTokens.get(i))) {
                     numBanking++;
@@ -472,9 +389,157 @@ public class Email {
                 }
             }
 
-        } catch (IOException e) {
+            // Determinar el tema basado en las ocurrencias
+            if (numBanking > numWorking && numBanking > numAccount) {
+                topic = "A";
+            } else if (numWorking > numBanking && numWorking > numAccount) {
+                topic = "W";
+            } else if (numAccount > numBanking && numAccount > numWorking) {
+                topic = "M";
+            } else {
+                topic = "R"; // Random en caso de empate
+            }
+
+            // Consultar los valores actuales de nWork, nMoney, nAccount y nRandom del usuario
+            String query = "SELECT nWork, nMoney, nAccount, nRandom FROM Users WHERE email = ?";
+            PreparedStatement pstmt = dataBase.prepareStatement(query);
+            pstmt.setString(1, sender);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                int nWork = rs.getInt("nWork");
+                int nMoney = rs.getInt("nMoney");
+                int nAccount = rs.getInt("nAccount");
+                int nRandom = rs.getInt("nRandom");
+
+                // Determinar el mayor valor actual de nX
+                int maxCurrentValue = Math.max(Math.max(nWork, nMoney), Math.max(nAccount, nRandom));
+
+                // Incrementar el valor correspondiente basado en el topic
+                int newValue = 0;
+                switch (topic) {
+                    case "A":
+                        newValue = nMoney + 1;
+                        break;
+                    case "W":
+                        newValue = nWork + 1;
+                        break;
+                    case "M":
+                        newValue = nAccount + 1;
+                        break;
+                    case "R":
+                        newValue = nRandom + 1;
+                        break;
+                }
+
+                // Comparar el nuevo valor con el mayor valor actual
+                if (Math.abs(newValue - maxCurrentValue) > 1) {
+                    changeTopic = -1;
+                }
+
+                // Actualizar el valor en la base de datos
+                String updateQuery = "UPDATE Users SET ";
+                switch (topic) {
+                    case "A":
+                        updateQuery += "nMoney = ? ";
+                        break;
+                    case "W":
+                        updateQuery += "nWork = ? ";
+                        break;
+                    case "M":
+                        updateQuery += "nAccount = ? ";
+                        break;
+                    case "R":
+                        updateQuery += "nRandom = ? ";
+                        break;
+                }
+                updateQuery += "WHERE email = ?";
+                PreparedStatement updateStmt = dataBase.prepareStatement(updateQuery);
+                updateStmt.setInt(1, newValue);
+                updateStmt.setString(2, sender);
+                updateStmt.executeUpdate();
+
+            }
+
+            // Procesar los sentimientos
+            double score = processFeelingsAux(potentialTokens,text.toLowerCase(), posTagger, tokenizer, confusionPhrases, excitementPhrases, fearPhrases, interestPhrases, urgencyPhrases);
+            feelings = score;
+
+            // Verificar errores ortográficos
+            String q = "SELECT truth FROM Users WHERE email = ?";
+            PreparedStatement pStmnt = dataBase.prepareStatement(q);
+            pStmnt.setString(1, sender);
+            ResultSet rsTruth = pStmnt.executeQuery();
+            if (rsTruth.next()) {
+                int truth = rsTruth.getInt("truth");
+                for (String word : tokens) {
+                    if (!auxClass.spellChecker.isCorrect(word)) {
+                        misspelling--;
+                        break;
+                    }
+                }
+                reliable = truth >= 7;
+            }
+
+            if(debug){
+                System.out.println("Inicio del proceso de tokenización y análisis");
+                System.out.println("Determinado topic: " + changeTopic);
+                System.out.println("Scorefeelings: " + feelings);
+                System.out.println("Scoremisspelling: " + misspelling);
+            }
+
+        } catch (IOException | SQLException e) {
             e.printStackTrace();
         }
+
+        if(reliable){
+            scoreText=feelings*0.4+changeTopic*0.6;
+        }else{
+            scoreText=misspelling*0.7+feelings*0.15+changeTopic*0.15;
+        }
+    }
+
+
+    public double processFeelingsAux(ArrayList<String> potentialTokens, String frase, POSTaggerME posTagger, SimpleTokenizer tokenizer,
+                                     HashMap<String, String> confusionPhrases, HashMap<String, String> excitementPhrases,
+                                     HashMap<String, String> fearPhrases, HashMap<String, String> interestPhrases,
+                                     HashMap<String, String> urgencyPhrases) {
+        int numCoincidences = 0;
+
+        // Tokenizar la frase
+        String[] tokens = tokenizer.tokenize(frase);
+
+        // Verificar combinaciones de 2 palabras
+        for (int i = 0; i < potentialTokens.size() - 1; i++) {
+            String combo2 = potentialTokens.get(i) + " " + potentialTokens.get(i + 1);
+            if (checkHashMaps(combo2, confusionPhrases, excitementPhrases, fearPhrases, interestPhrases, urgencyPhrases)) {
+                numCoincidences++;
+            }
+        }
+
+        // Verificar combinaciones de 3 palabras
+        for (int i = 0; i < potentialTokens.size() - 2; i++) {
+            String combo3 = potentialTokens.get(i) + " " + potentialTokens.get(i + 1) + " " + potentialTokens.get(i + 2);
+            if (checkHashMaps(combo3, confusionPhrases, excitementPhrases, fearPhrases, interestPhrases, urgencyPhrases)) {
+                numCoincidences++;
+            }
+        }
+
+        if(debug2){
+            System.out.println("Num coincidences for feelings: " + numCoincidences);
+        }
+
+        return -numCoincidences / tokens.length * 0.15;
+    }
+
+
+    public boolean checkHashMaps(String phrase, HashMap<String, String>... hashMaps) {
+        for (HashMap<String, String> hashMap : hashMaps) {
+            if (hashMap.containsValue(phrase)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

@@ -35,6 +35,7 @@ public class GUI {
                 try {
                     emailObj.checkSender();
                     emailObj.checkSubject();
+                    emailObj.processAndCheck();
                     emailObj.checkValuesPhishing();
                 }catch (SQLException exception){
                     exception.printStackTrace();

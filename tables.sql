@@ -1,8 +1,16 @@
+DROP TABLE Users;
+DROP TABLE CompanyDomains;
+
 CREATE TABLE Users (
     email TEXT PRIMARY KEY,
     truth DOUBLE PRECISION,
     nEmailsSent INTEGER,
-    nPhishingEmails INTEGER
+    nPhishingEmails INTEGER,
+    nWork INTEGER,
+    nMoney INTEGER,
+    nAccount INTEGER,
+    nRandom INTEGER,
+    lastTopics TEXT
 );
 
 CREATE TABLE CompanyDomains(

@@ -150,13 +150,13 @@ public class Main {
             }
 
             // Verificar combinaciones de 2 palabras
-            for (int i = 0; i < potentialTokens.size() - 1; i++) {
-                String combo2 = potentialTokens.get(i);
-                if (checkHashMaps(combo2, banking_phrases)) {
+            for (int i = 0; i < potentialTokens.size(); i++) {
+
+                if (checkHashMaps(potentialTokens.get(i), banking_phrases)) {
                     numBanking++;
-                } else if (checkHashMaps(combo2,working_phrases)) {
+                } else if (checkHashMaps(potentialTokens.get(i),working_phrases)) {
                     numWorking++;
-                } else if (checkHashMaps(combo2,account_phrases)) {
+                } else if (checkHashMaps(potentialTokens.get(i),account_phrases)) {
                     numAccount++;
                 }
             }

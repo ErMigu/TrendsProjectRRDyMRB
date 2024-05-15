@@ -14,7 +14,6 @@ online
 Report
 fraudulent
 recovery
-Phishing
 takeover
 Fraudulent
 charge
@@ -27,8 +26,6 @@ access
 Update
 security
 your
-Email
-sender
 account
 password
 statement

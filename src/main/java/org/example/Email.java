@@ -7,7 +7,6 @@ import opennlp.tools.tokenize.SimpleTokenizer;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -350,7 +349,7 @@ public class Email {
             // Tokenizar la frase
             SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
 
-            double score = processEmail(text.toLowerCase(), posTagger, tokenizer, confusionPhrases, excitementPhrases, fearPhrases, interestPhrases, urgencyPhrases);
+            double score = processFeelingsAux(text.toLowerCase(), posTagger, tokenizer, confusionPhrases, excitementPhrases, fearPhrases, interestPhrases, urgencyPhrases);
             System.out.println("Email: " + text);
             System.out.println("Score: " + score);
 
@@ -378,10 +377,10 @@ public class Email {
         return false;
     }
 
-    public double processEmail(String frase, POSTaggerME posTagger, SimpleTokenizer tokenizer,
-                                    HashMap<String, String> confusionPhrases, HashMap<String, String> excitementPhrases,
-                                    HashMap<String, String> fearPhrases, HashMap<String, String> interestPhrases,
-                                    HashMap<String, String> urgencyPhrases) {
+    public double processFeelingsAux(String frase, POSTaggerME posTagger, SimpleTokenizer tokenizer,
+                                     HashMap<String, String> confusionPhrases, HashMap<String, String> excitementPhrases,
+                                     HashMap<String, String> fearPhrases, HashMap<String, String> interestPhrases,
+                                     HashMap<String, String> urgencyPhrases) {
         int numCoincidences = 0;
 
         // Tokenizar la frase
@@ -446,12 +445,7 @@ public class Email {
 
             // Tokenizar la frase
             SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
-
-
-
-            // Tokenizar la frase
             String[] tokens = tokenizer.tokenize(text.toLowerCase());
-            System.out.println("\n"+tokens.length);
             ArrayList<String> potentialTokens = new ArrayList<>();
 
             // Etiquetar las palabras con sus categorías gramaticales
@@ -468,25 +462,12 @@ public class Email {
             }
 
             // Verificar combinaciones de 2 palabras
-            for (int i = 0; i < potentialTokens.size() - 1; i++) {
-                String combo2 = potentialTokens.get(i) + " " + potentialTokens.get(i + 1);
-                if (checkHashMaps(combo2, banking_phrases)) {
+            for (int i = 0; i < potentialTokens.size(); i++) {
+                if (banking_phrases.containsValue(potentialTokens.get(i))) {
                     numBanking++;
-                } else if (checkHashMaps(combo2,working_phrases)) {
+                } else if (working_phrases.containsValue(potentialTokens.get(i))) {
                     numWorking++;
-                } else if (checkHashMaps(combo2,account_phrases)) {
-                    numAccount++;
-                }
-            }
-
-            // Verificar combinaciones de 3 palabras
-            for (int i = 0; i < potentialTokens.size() - 2; i++) {
-                String combo3 = potentialTokens.get(i) + " " + potentialTokens.get(i + 1) + " " + potentialTokens.get(i + 2);
-                if (checkHashMaps(combo3, banking_phrases)) {
-                    numBanking++;
-                } else if (checkHashMaps(combo3,working_phrases)) {
-                    numWorking++;
-                } else if (checkHashMaps(combo3,account_phrases)) {
+                } else if (account_phrases.containsValue(potentialTokens.get(i))) {
                     numAccount++;
                 }
             }
